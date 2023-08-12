@@ -1,10 +1,11 @@
 #ifdef ORDER_LIMIT_HPP
 #define ORDER_LIMIT_HPP
+#include <algorithm>
 #include <list>
-#include <memory>
 #include <memory>
 
 #include "include/utils.hpp"
+#include "order.hpp"
 namespace OrderBook {
 
 class Order;
@@ -23,10 +24,12 @@ class OrderLimit {
 
     double simulate_trade(const double quantity) const;
     inline std::size_t get_order_count() const;
+    inline double get_quantity() const;
+    inline double get_all_or_nothing_quantity() const;
 
     inline std::list<SharedOrderPtr>::iterator begin();
     inline std::list<SharedOrderPtr>::iterator end();
-    inline std::size_t order_cound() const;
+    inline std::size_t order_count() const;
     inline std::size_t all_or_nothing_order_count() const;
 
     friend Book;
@@ -37,10 +40,7 @@ class OrderLimit {
 
 }  // namespace OrderBook
 
-#include <algorithm>
-
-#include "order.hpp"
-
+// TODO not completed
 OrderBook::OrderLimit::simulate_trade(const double new_quantity) const {
     const double total_quantity = quantity + all_or_nothing_quantity;
 
@@ -48,5 +48,21 @@ OrderBook::OrderLimit::simulate_trade(const double new_quantity) const {
         return new_quantity - total_quantity;
     }
 };
+
+double OrderBook::OrderLimit::get_quantity() const { return quantity; }
+double OrderBook::OrderLimit::get_all_or_nothing_quantity() const {
+    return all_or_nothing_quantity;
+}
+
+std::size_t OrderBook::OrderLimit::order_count() const { return orders.size(); }
+std::size_t OrderBook::OrderLimit::all_or_nothing_order_count() const {
+    return all_or_nothing_iterator.size();
+}
+OrderBook::OrderLimit::~OrderLimit() {
+    for (auto &order : orders) {
+        order->book = nullptr;
+        order->queued = false;
+    }
+}
 
 #endif
