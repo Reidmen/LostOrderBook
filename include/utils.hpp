@@ -5,20 +5,20 @@
 #include <memory>
 
 namespace OrderBook {
-    enum side { bid = 0, ask = 1};
-    enum offset{ abs = 0, pct = 1};
+enum Side { bid = 0, ask = 1 };
+enum Offset { abs = 0, pct = 1 };
 
-    const double max_price = DBL_MAX;
-    const double min_price = 0.0;
+const double max_price = DBL_MAX;
+const double min_price = 0.0;
 
-    class Order;
-    using shared_order_ptr = std::shared_ptr<Order>;
-    using const_order_ptr = const shared_order_ptr;
+class Order;
+using SharedOrderPtr = std::shared_ptr<Order>;
+using ConstOrderPtr = const SharedOrderPtr;
 
-    class Trigger;
-    using shared_trigger_ptr = std::shared_ptr<Trigger>;
-    using const_trigger_ptr = const shared_trigger_ptr;
+class Trigger;
+using SharedTriggerPtr = std::shared_ptr<Trigger>;
+using ConstTriggerPtr = const SharedTriggerPtr;
 
-}
+}  // namespace OrderBook
 
 #endif
