@@ -1,4 +1,4 @@
-![Progress](https://progress-bar.dev/21/?title=Codebase)
+![Progress](https://progress-bar.dev/15/?title=Code)
 ![Code](https://img.shields.io/badge/-c++-black?logo=c%2B%2B&style=social)
 
 

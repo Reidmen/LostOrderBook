@@ -4,7 +4,7 @@
  *  - OrderLimit
  *  - Trigger
  *  - TriggerLimit
- * as well as useful classes
+ * as well as useful classes:
  *  - Insertable
  *  - Stop
  */
@@ -12,9 +12,10 @@
 #ifndef ORDER_HPP
 #define ORDER_HPP
 
+#include <cstddef>
 #include <list>
 #include <map>
-
+#include <variant>
 #include "utils.hpp"
 
 class Order;
@@ -141,4 +142,54 @@ class Trigger : public std::enable_shared_from_this<Trigger> {
     friend TriggerLimit;
 };
 
+/*
+ * @brief TriggerLimit object holds
+ * the a list of Trigger objects with methods:
+ *  - insert iterator
+ *  - erase
+ */
+class TriggerLimit {
+   private:
+    std::list<SharedTriggerPtr> triggers;
+    std::list<SharedTriggerPtr>::iterator insert(ConstTriggerPtr &trigger);
+
+    inline bool is_empty() const { return triggers.empty(); }
+    void trigger_all();
+
+   public:
+    /*
+     * @brief: Get Iterator the first trigger in queue
+     */
+    inline std::list<SharedTriggerPtr>::iterator begin();
+    /*
+     * @brief: Get Iterator the end trigger in queue
+     */
+    inline std::list<SharedTriggerPtr>::iterator end();
+    inline std::size_t trigger_count() const;
+
+    friend Book;
+    friend Trigger;
+
+    ~TriggerLimit();
+};
+
+
+/*
+ * @brief Insertable objects defines insertable Order or 
+ * Trigger types and useful methods to access each object
+ */
+class Insertable {
+    private:
+        std::variant<SharedOrderPtr, SharedTriggerPtr> object;
+    public:
+        Insertable(const SharedOrderPtr &order);
+        Insertable(const SharedTriggerPtr &trigger);
+
+        inline bool is_order() const;
+        inline bool is_trigger() const;
+
+        inline const SharedOrderPtr *get_order() const;
+        inline const SharedTriggerPtr *get_trigger() const;
+
+};
 #endif
