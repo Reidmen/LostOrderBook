@@ -17,9 +17,16 @@
 
 #include "utils.hpp"
 
-class TriggerLimit;
+class Order;
 class OrderLimit;
+class Trigger;
+class TriggerLimit;
 class Book;
+
+using SharedOrderPtr = std::shared_ptr<Order>;
+using ConstOrderPtr = const SharedOrderPtr;
+using SharedTriggerPtr = std::shared_ptr<Trigger>;
+using ConstTriggerPtr = const SharedTriggerPtr;
 
 /*
  * @brief Order class
@@ -36,13 +43,13 @@ class Order : public std::enable_shared_from_this<Order> {
 
     // iterators to allocate order in book, cancel O(1)
     std::map<double, OrderLimit>::iterator limitIterator;
-    std::list<Utils::SharedOrderPtr>::iterator orderIterator;
+    std::list<SharedOrderPtr>::iterator orderIterator;
 
    protected:
     virtual void on_accepted();
     virtual void on_queue();
     virtual void on_rejected();
-    virtual void on_traded(Utils::ConstOrderPtr &other_order){};
+    virtual void on_traded(ConstOrderPtr &other_order){};
     virtual void on_canceled(){};
 
    public:
@@ -76,20 +83,18 @@ class OrderLimit {
     double all_or_nothing_quantity = 0.0;
 
     // order are stored as double-linked lists for O(1) cancel
-    std::list<Utils::SharedOrderPtr> orders;
+    std::list<SharedOrderPtr> orders;
 
-    std::list<std::list<Utils::SharedOrderPtr>::iterator>
-        all_or_nothing_iterator;
-    std::list<Utils::SharedOrderPtr>::iterator insert(
-        Utils::ConstOrderPtr &order);
+    std::list<std::list<SharedOrderPtr>::iterator> all_or_nothing_iterator;
+    std::list<SharedOrderPtr>::iterator insert(ConstOrderPtr &order);
 
     double simulate_trade(const double quantity) const;
     inline std::size_t get_order_count() const;
     inline double get_quantity() const;
     inline double get_all_or_nothing_quantity() const;
 
-    inline std::list<Utils::SharedOrderPtr>::iterator begin();
-    inline std::list<Utils::SharedOrderPtr>::iterator end();
+    inline std::list<SharedOrderPtr>::iterator begin();
+    inline std::list<SharedOrderPtr>::iterator end();
     inline std::size_t order_count() const;
     inline std::size_t all_or_nothing_order_count() const;
 
