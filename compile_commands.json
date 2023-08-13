@@ -1,0 +1,5 @@
+[
+    {"directory": "/home/reidmen/LostOrderBook/include",
+     "command": ["/usr/bin/clang++-15", "-Irelative"]
+    }
+]

@@ -1,10 +1,10 @@
-#ifndef COMMON_HPP
-#define COMMON_HPP
+#ifndef UTILS_HPP
+#define UTILS_HPP
 
 #include <cfloat>
 #include <memory>
 
-namespace OrderBook {
+namespace Utils {
 enum Side { bid = 0, ask = 1 };
 enum Offset { abs = 0, pct = 1 };
 
@@ -19,6 +19,6 @@ class Trigger;
 using SharedTriggerPtr = std::shared_ptr<Trigger>;
 using ConstTriggerPtr = const SharedTriggerPtr;
 
-}  // namespace OrderBook
+}  // namespace Utils
 
 #endif
