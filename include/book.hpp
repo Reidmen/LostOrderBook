@@ -3,9 +3,23 @@
 
 #include <functional>
 #include <memory>
+#include <ostream>
 #include <queue>
+#include <utility>
 
 #include "order.hpp"
+
+template <class T, class... Args>
+std::shared_ptr<T> insert(Args &&... args) {
+    auto ptr = std::make_shared<T>(std::forward<Args>(args)...);
+    insert(ptr);
+    return ptr;
+}
+
+/*
+ * @brief operator ostream object to handle orders from stream
+ */
+std::ostream &operator<<(std::ostream &os, const Book &book);
 
 /*
  * @brief Book implements a price-time-priority matching engine.
@@ -30,6 +44,24 @@ class Book {
 
     // initialize market price with negative values
     double market_price = Utils::negative_price;
+
+    /*
+     * @brief When called, subsequent orders will be deferred
+     * rather than queued immediately. This is required
+     * to ensure orders are fully executed before new orders
+     */
+    inline void begin_order_deferral();
+
+    /*
+     * @brief Once the outer insertion call is executed,
+     * orders from the deferral queue are executed
+     */
+    inline void end_order_deferral();
+    inline void insert_bid(ConstOrderPtr &order);
+    inline void insert_ask(ConstOrderPtr &order);
+
+    inline void insert_all_or_nothing_bid(ConstOrderPtr &order);
+    inline void insert_all_or_nothing_ask(ConstOrderPtr &order);
 
    public:
     template <class T, class... Args>
