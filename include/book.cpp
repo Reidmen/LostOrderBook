@@ -142,6 +142,51 @@ void Book::insert_bid(ConstOrderPtr &order) {
     }
 }
 
+void Book::execute_ask(ConstOrderPtr &order) {
+    auto limit_iterator = bids.begin();
+    double order_price = order->price;
+
+    while (limit_iterator != bids.end() &&
+           limit_iterator->first >= order_price && order->quantity > 0.0) {
+        if (limit_iterator->second.trade(order) > 0.0) {
+            market_price = limit_iterator->first;
+        }
+
+        if (limit_iterator->second.is_empty()) {
+            bids.erase(limit_iterator++);
+        } else {
+            ++limit_iterator;
+        }
+    }
+
+    auto trigger_limit_iterator = bid_triggers.begin();
+
+    while (trigger_limit_iterator != bid_triggers.end() &&
+           trigger_limit_iterator->first >= market_price) {
+        trigger_limit_iterator->second.trigger_all();
+        ++trigger_limit_iterator;
+    }
+
+    bid_triggers.erase(bid_triggers.begin(), trigger_limit_iterator);
+}
+
+void Book::insert_all_or_nothing_ask(ConstOrderPtr &order) {
+    if (ask_is_fillable(order)) {
+        execute_ask(order);
+        order->book = nullptr;
+        return;
+    }
+
+    if (order->immediate_or_cancel) {
+        order->on_canceled();
+        order->book = nullptr;
+        return;
+    }
+
+    // queue unexecuted all-or-nothing order
+    queue_ask_order(order);
+}
+
 void Book::insert(ConstOrderPtr order) {
     // check if order is valid
     if (order_deferral_depth > 0) {
