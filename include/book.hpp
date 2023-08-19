@@ -73,7 +73,7 @@ class Book {
      * @return true if the order is completely fillable
      * @return false if the order is partially fillable
      */
-    inline bool bid_is_fillable(ConstOrderPtr order) const;
+    inline bool bid_is_fillable(ConstOrderPtr &order) const;
 
     /*
      * @brief check if the ask order can be filled completely.

@@ -78,6 +78,35 @@ void Book::queue_bid_order(ConstOrderPtr &order) {
     order->on_queue();
 }
 
+bool Book::bid_is_fillable(ConstOrderPtr &order) const {
+    auto limit_iterator = asks.begin();
+    double quantity_remaining = order->quantity;
+    const double order_price = order->price;
+
+    while (limit_iterator != asks.end() &&
+           limit_iterator->first <= order_price && quantity_remaining > 0.0) {
+        const double limit_quantity = limit_iterator->second.quantity;
+        const double all_or_nothing_quantity =
+            limit_iterator->second.all_or_nothing_quantity;
+        const double total_limit_quantity =
+            limit_quantity + all_or_nothing_quantity;
+
+        if (quantity_remaining >= total_limit_quantity) {
+            quantity_remaining -= total_limit_quantity;
+        } else if (quantity_remaining <= limit_quantity) {
+            return true;
+        } else {
+            // expensive
+            quantity_remaining =
+                limit_iterator->second.simulate_trade(quantity_remaining);
+        }
+
+        ++limit_iterator;
+    }
+
+    return quantity_remaining <= 0.0;
+}
+
 void Book::insert_all_or_nothing_bid(ConstOrderPtr &order) {
     if (bid_is_fillable(order)) {
         execute_bid(order);
