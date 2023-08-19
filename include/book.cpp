@@ -44,17 +44,38 @@ void Book::execute_bid(ConstOrderPtr &order) {
     ask_triggers.erase(ask_triggers.begin(), trigger_limit_iteration);
 }
 
+void Book::check_asks_all_or_nothing(const double price) {
+    auto limit_iter = asks.lower_bound(price);
+    while (limit_iter != asks.end()) {
+        auto &limit = limit_iter->second;
+        auto order_iter = limit.all_or_nothing_iterators.begin();
+
+        while (order_iter != limit.all_or_nothing_iterators.end()) {
+            auto order = **order_iter;
+            if (ask_is_fillable(order)) {
+                execute_queued_ask(order);
+            } else {
+                ++order_iter;
+            }
+        }
+
+        if (limit_iter->second.is_empty()) {
+            asks.erase(limit_iter++);
+        } else {
+            ++limit_iter;
+        }
+    }
+}
 
 void Book::queue_bid_order(ConstOrderPtr &order) {
-    const auto limit_iteration = bids.emplace(order->price, OrderLimit()).first;
-    const auto order_iteration = limit_iteration->second.insert(order);
+    const auto limit_iterator = bids.emplace(order->price, OrderLimit()).first;
+    const auto order_iterator = limit_iterator->second.insert(order);
 
-    order->limit_iteration = limit_iteration;
-    order->order_iteration = order_iteration;
+    order->limit_iterator = limit_iterator;
+    order->order_iterator = order_iterator;
     order->queued = true;
     check_asks_all_or_nothing(order->price);
     order->on_queue();
-
 }
 
 void Book::insert_all_or_nothing_bid(ConstOrderPtr &order) {

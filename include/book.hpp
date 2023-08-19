@@ -2,6 +2,7 @@
 #define BOOK_HPP
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <ostream>
 #include <queue>
@@ -144,6 +145,36 @@ class Book {
      * @return double the current market price
      */
     inline double get_market_price() const;
+
+    /*
+     * @brief get an iterator to the end of bids 
+     *
+     * @return std::map<double, OrderLimit>::iterator bid 
+     * price level end iterator 
+     */
+    inline std::map<double, OrderLimit>::iterator bid_limits_begin();
+    /*
+     * @brief get an iterator to the first ask price level
+     *
+     * @return std::map<double, OrderLimit>::iterator ask
+     * begin iterator
+     */
+    inline std::map<double, OrderLimit>::iterator ask_limits_begin();
+
+    /*
+     * @brief get an iterator to the end of the bids
+     *
+     * @return std::map<double, OrderLimit>::iterator bid price
+     * level and iterator
+     */
+    inline std::map<double, OrderLimit>::iterator bid_limits_end();
+    /*
+     * @brief get an iterator to the end of the asks 
+     *
+     * @return std::map<double, OrderLimit>::iterator ask price
+     * level and iterator
+     */
+    inline std::map<double, OrderLimit>::iterator ask_limits_end();
 
     // destructor
     ~Book();

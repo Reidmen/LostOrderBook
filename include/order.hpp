@@ -16,6 +16,7 @@
 #include <list>
 #include <map>
 #include <variant>
+
 #include "utils.hpp"
 
 class Order;
@@ -43,8 +44,8 @@ class Order : public std::enable_shared_from_this<Order> {
     Book *book = nullptr;
 
     // iterators to allocate order in book, cancel O(1)
-    std::map<double, OrderLimit>::iterator limitIterator;
-    std::list<SharedOrderPtr>::iterator orderIterator;
+    std::map<double, OrderLimit>::iterator limit_iterator;
+    std::list<SharedOrderPtr>::iterator order_iterator;
 
    protected:
     virtual void on_accepted();
@@ -86,13 +87,52 @@ class OrderLimit {
     // order are stored as double-linked lists for O(1) cancel
     std::list<SharedOrderPtr> orders;
 
-    std::list<std::list<SharedOrderPtr>::iterator> all_or_nothing_iterator;
+    // all_or_nothing_iterators stores iterators to the all_or_nothing
+    // orders to be quickly looked up. When all-or-nothing orders
+    // are executed or canceled, their iterators must be deleted
+    // from the list
+    std::list<std::list<SharedOrderPtr>::iterator> all_or_nothing_iterators;
     std::list<SharedOrderPtr>::iterator insert(ConstOrderPtr &order);
 
+    /*
+     * @brief simulates the execution of an order with quantity
+     * and returns the amount of remaining quantity.
+     * This function is used to test if all-or-nothing orders
+     * are fillable.
+     *
+     * @param quantity, the amount of quantity to be traded
+     * @return the quantity remaining
+     */
     double simulate_trade(const double quantity) const;
-    inline std::size_t get_order_count() const;
+    /*
+     * @brief execute an inbound order.
+     *
+     * @param order, the inbound order
+     * @return the traded quantity
+     */
+    inline double trade(ConstOrderPtr &order);
+    /*
+     * @brief check if orders is empty in the limit order
+     */
+    inline bool is_empty() const { return orders.empty(); }
+    void erase(const std::list<SharedOrderPtr>::iterator &order_iter);
+
+
+   public:
+    /*
+     * @brief get the non-all-or-none quantity at this price level.
+     * This quantity can be filled partially.
+     *
+     * @return the non-all-or-none quantity at this price level
+     */
     inline double get_quantity() const;
+    /*
+     * @brief get the all-or-none quantity at this price level.
+     *
+     * @return the all-or-none quantity at this price level
+     */
     inline double get_all_or_nothing_quantity() const;
+    inline std::size_t get_order_count() const;
 
     inline std::list<SharedOrderPtr>::iterator begin();
     inline std::list<SharedOrderPtr>::iterator end();
@@ -173,23 +213,22 @@ class TriggerLimit {
     ~TriggerLimit();
 };
 
-
 /*
- * @brief Insertable objects defines insertable Order or 
+ * @brief Insertable objects defines insertable Order or
  * Trigger types and useful methods to access each object
  */
 class Insertable {
-    private:
-        std::variant<SharedOrderPtr, SharedTriggerPtr> object;
-    public:
-        Insertable(const SharedOrderPtr &order);
-        Insertable(const SharedTriggerPtr &trigger);
+   private:
+    std::variant<SharedOrderPtr, SharedTriggerPtr> object;
 
-        inline bool is_order() const;
-        inline bool is_trigger() const;
+   public:
+    Insertable(const SharedOrderPtr &order);
+    Insertable(const SharedTriggerPtr &trigger);
 
-        inline const SharedOrderPtr *get_order() const;
-        inline const SharedTriggerPtr *get_trigger() const;
+    inline bool is_order() const;
+    inline bool is_trigger() const;
 
+    inline const SharedOrderPtr *get_order() const;
+    inline const SharedTriggerPtr *get_trigger() const;
 };
 #endif
