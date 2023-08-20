@@ -34,6 +34,6 @@ OrderLimit::~OrderLimit() {
 
 std::size_t OrderLimit::order_count() const { return orders.size(); }
 std::size_t OrderLimit::all_or_nothing_order_count() const {
-    return all_or_nothing_iterator.size();
+    return all_or_nothing_iterators.size();
 }
 

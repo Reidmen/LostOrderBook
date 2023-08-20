@@ -1,6 +1,9 @@
 #include "book.hpp"
 
+#include <map>
+
 #include "order.hpp"
+#include "utils.hpp"
 
 void Book::begin_order_deferral() { ++order_deferral_depth; }
 
@@ -42,6 +45,41 @@ void Book::execute_bid(ConstOrderPtr &order) {
     }
 
     ask_triggers.erase(ask_triggers.begin(), trigger_limit_iteration);
+}
+
+bool Book::ask_is_fillable(ConstOrderPtr &order) const {
+    auto limit_iterator = bids.begin();
+    double quantity_remaining = order->quantity;
+    const double order_price = order->price;
+
+    while (limit_iterator != asks.end() &&
+           limit_iterator->first >= order_price && quantity_remaining > 0.0) {
+        const double limit_quantity = limit_iterator->second.quantity;
+        const double all_or_nothing_quantity =
+            limit_iterator->second.all_or_nothing_quantity;
+        const double total_limit_quantity =
+            limit_quantity + all_or_nothing_quantity;
+
+        if (quantity_remaining >= total_limit_quantity) {
+            quantity_remaining -= total_limit_quantity;
+        } else if (quantity_remaining <= limit_quantity) {
+            return true;
+        } else {
+            // expensive computation
+            quantity_remaining -=
+                limit_iterator->second.simulate_trade(quantity_remaining);
+        }
+
+        ++limit_iterator;
+    }
+
+    return quantity_remaining <= 0.0;
+}
+
+void Book::execute_queued_ask(ConstOrderPtr &order) {
+    const double quantity = order->quantity;
+    execute_ask(order);
+    order->limit_iterator->second.quantity -= quantity;
 }
 
 void Book::check_asks_all_or_nothing(const double price) {
@@ -229,6 +267,25 @@ void Book::insert_all_or_nothing_ask(ConstOrderPtr &order) {
     queue_ask_order(order);
 }
 
+void Book::insert_ask(ConstOrderPtr &order) {
+    execute_ask(order);
+
+    if (order->immediate_or_cancel) {
+        if (order->quantity > 0.0) {
+            order->on_canceled();
+        }
+
+        order->book = nullptr;
+        return;
+    }
+
+    if (order->quantity > 0.0) {
+        queue_ask_order(order);
+    } else {
+        order->book = nullptr;
+    }
+}
+
 void Book::insert(ConstOrderPtr order) {
     // check if order is valid
     if (order_deferral_depth > 0) {
@@ -265,4 +322,40 @@ void Book::insert(ConstOrderPtr order) {
     }
 
     end_order_deferral();
+}
+
+double Book::get_bid_price() const {
+    const auto iter = bids.begin();
+    return iter != bids.end() ? iter->first : Utils::min_price;
+}
+
+double Book::get_ask_price() const {
+    const auto iter = asks.begin();
+    return iter != asks.end() ? iter->first : Utils::max_price;
+}
+
+double Book::get_market_price() const { return market_price; }
+
+std::map<double, OrderLimit>::iterator Book::bid_limits_begin() {
+    return bids.begin();
+}
+
+std::map<double, OrderLimit>::iterator Book::bid_limits_end() {
+    return bids.end();
+}
+
+std::map<double, OrderLimit>::iterator Book::ask_limits_begin() {
+    return asks.begin();
+}
+
+std::map<double, OrderLimit>::iterator Book::ask_limits_end() {
+    return asks.end();
+}
+
+Book::~Book() {
+    bids.clear();
+    asks.clear();
+
+    bid_triggers.clear();
+    ask_triggers.clear();
 }
