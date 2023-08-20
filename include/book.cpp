@@ -170,6 +170,48 @@ void Book::execute_ask(ConstOrderPtr &order) {
     bid_triggers.erase(bid_triggers.begin(), trigger_limit_iterator);
 }
 
+void Book::execute_queued_bid(ConstOrderPtr &order) {
+    const double quantity = order->quantity;
+    execute_bid(order);
+    order->limit_iterator->second.all_or_nothing_quantity -= quantity;
+}
+
+void Book::check_bids_all_or_nothing(const double price) {
+    auto limit_iterator = bids.lower_bound(price);
+
+    while (limit_iterator != bids.end()) {
+        auto &limit_object = limit_iterator->second;
+        auto order_iterator = limit_object.all_or_nothing_iterators.begin();
+
+        while (order_iterator != limit_object.all_or_nothing_iterators.end()) {
+            auto order_object = **order_iterator;
+            if (bid_is_fillable(order_object)) {
+                execute_queued_bid(order_object);
+                limit_object.erase(*(order_iterator++));
+            } else {
+                ++order_iterator;
+            }
+        }
+
+        if (limit_iterator->second.is_empty()) {
+            bids.erase(limit_iterator++);
+        } else {
+            ++limit_iterator;
+        }
+    }
+}
+
+void Book::queue_ask_order(ConstOrderPtr &order) {
+    const auto limit_iterator = asks.emplace(order->price, OrderLimit()).first;
+    const auto order_iterator = limit_iterator->second.insert(order);
+
+    order->limit_iterator = limit_iterator;
+    order->order_iterator = order_iterator;
+    order->queued = true;
+    check_bids_all_or_nothing(order->price);
+    order->on_queue();
+}
+
 void Book::insert_all_or_nothing_ask(ConstOrderPtr &order) {
     if (ask_is_fillable(order)) {
         execute_ask(order);
