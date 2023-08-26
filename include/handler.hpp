@@ -12,6 +12,45 @@
 #include <cstdint>
 #include <vector>
 
+namespace MessageTypes {
+struct SystemEventMessage {
+    char Type;
+    uint16_t StockLocate;
+    uint16_t TrackingNumber;
+    uint64_t Timestamp;
+    char EventCode;
+};
+
+struct StockDirectoryMessage {
+    char Type;
+    uint16_t StockLocate;
+    uint16_t TrackingNumber;
+    uint64_t Timestamp;
+    char Stock[8];
+    char MarketCategory;
+    char FinancialStatusIndicator;
+};
+
+struct StockTradingActionMessage {
+    char Type;
+    uint16_t StockLocate;
+    uint16_t TrackingNumber;
+    uint64_t Timestamp;
+    char Stock[8];
+    char TradingState;
+    char Reserved;
+    char Reason;
+};
+
+struct MarketParticipantPositionMessage {};
+struct AddOrderMesssage {};
+struct OrderExecutedMessage {};
+struct OrderExecutedWithPriceMessage {};
+struct OrderCancelMessage {};
+struct OrderDeleteMessage {};
+
+}  // namespace MessageTypes
+
 class ITCHHandler {
    public:
     ITCHHandler() { ResetHandler(); }
@@ -25,6 +64,39 @@ class ITCHHandler {
 
     void ResetHandler();
 
+   protected:
+    // message handlers
+    virtual bool onMessage(const MessageTypes::SystemEventMessage& message) {
+        return true;
+    }
+    virtual bool onMessage(const MessageTypes::StockDirectoryMessage& message) {
+        return true;
+    }
+    virtual bool onMessage(
+        const MessageTypes::StockTradingActionMessage& message) {
+        return true;
+    }
+    virtual bool onMessage(
+        const MessageTypes::MarketParticipantPositionMessage& message) {
+        return true;
+    }
+    virtual bool onMessage(const MessageTypes::AddOrderMesssage& message) {
+        return true;
+    }
+    virtual bool onMessage(const MessageTypes::OrderExecutedMessage& message) {
+        return true;
+    }
+    virtual bool onMessage(
+        const MessageTypes::OrderExecutedWithPriceMessage& message) {
+        return true;
+    }
+    virtual bool onMessage(const MessageTypes::OrderCancelMessage& message) {
+        return true;
+    }
+    virtual bool onMessage(const MessageTypes::OrderDeleteMessage& message) {
+        return true;
+    }
+
    private:
     using size_t = std::size_t;
     using cache = std::vector<std::uint8_t>;
@@ -33,6 +105,16 @@ class ITCHHandler {
     bool ProcessStockDirectoryMessage(void* buffer, size_t size);
     bool ProcessStockTradingActionMessage(void* buffer, size_t size);
     bool ProcessMarketParticipantPositionMessage(void* buffer, size_t size);
+    bool ProcessAddOrderMesssage(void* buffer, size_t size);
+    bool ProcessOrderExecutedMessage(void* buffer, size_t size);
+    bool ProcessOrderExecutedWithPriceMessage(void* buffer, size_t size);
+    bool ProcessOrderCancelMessage(void* buffer, size_t size);
+    bool ProcessOrderDeleteMessage(void* buffer, size_t size);
+    bool ProcessOrderReplaceMessage(void* buffer, size_t size);
+    bool ProcessTradeMessage(void* buffer, size_t size);
+    bool ProcessCrossTradeMessage(void* buffer, size_t size);
+    bool ProcessBrokenTradeMessage(void* buffer, size_t size);
+    bool ProcessUnknownMessage(void* buffer, size_t size);
 
     template <size_t N>
     size_t ReadString(const void* buffer, char (&str)[N]);
