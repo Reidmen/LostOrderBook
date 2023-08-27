@@ -57,11 +57,8 @@ class ITCHHandler {
     ITCHHandler(const ITCHHandler& ithandler) = delete;
 
     virtual ~ITCHHandler() = default;
-
     bool Process(void* buffer, std::size_t size);
-
     bool ProcessMessage(void* buffer, std::size_t size);
-
     void ResetHandler();
 
    protected:
@@ -98,8 +95,10 @@ class ITCHHandler {
     }
 
    private:
+    std::vector<std::uint8_t> _cache;
+    std::size_t _size;
+
     using size_t = std::size_t;
-    using cache = std::vector<std::uint8_t>;
 
     bool ProcessSystemEventMessage(void* buffer, size_t size);
     bool ProcessStockDirectoryMessage(void* buffer, size_t size);
