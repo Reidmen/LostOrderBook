@@ -1,10 +1,47 @@
 #include "handler.hpp"
 
+#include <cassert>
+#include <cstddef>
 #include <cstdint>
+
+#include "utils.hpp"
 
 void ITCHHandler::ResetHandler() {
     _size = 0;
     _cache.clear();
+}
+
+bool ITCHHandler::ProcessSystemEventMessage(void* buffer, size_t size) {
+    assert((size == 12) && "Invalid size of the ITCH message type 'S'");
+    if (size != 12) return false;
+
+    uint8_t* data = (uint8_t*)buffer;
+
+    MessageTypes::SystemEventMessage message;
+    message.Type = *data++;
+    data += Utils::ReadMessage(data, message.StockLocate);
+    data += Utils::ReadMessage(data, message.TrackingNumber);
+    data += ITCHHandler::readTimestamp(data, message.Timestamp);
+    message.EventCode = *data++;
+}
+
+bool ITCHHandler::ProcessStockDirectoryMessage(void* buffer, size_t size) {
+    assert((size == 39) && "Invalid size of the ITCH message type 'R'");
+
+    if (size != 39) return false;
+
+    uint8_t* data = (uint8_t*)buffer;
+    MessageTypes::StockDirectoryMessage message;
+    message.Type = *data++;
+    data += Utils::ReadMessage(data, message.StockLocate);
+    data += Utils::ReadMessage(data, message.TrackingNumber);
+    data += ITCHHandler::readTimestamp(data, message.Timestamp);
+    data += ITCHHandler::ReadString(data, message.Stock);
+
+    message.MarketCategory *= *data++;
+    message.FinancialStatusIndicator = *data++;
+
+    return onMessage(message);
 }
 
 bool ITCHHandler::ProcessMessage(void* buffer, size_t size) {
@@ -79,6 +116,7 @@ bool ITCHHandler::Process(void* buffer, std::size_t size) {
                 index += remaining;
                 continue;
             }
+            // TODO: missing handling of new message!
         }
     }
 }
