@@ -96,7 +96,9 @@ class ITCHHandler {
 
    private:
     std::vector<std::uint8_t> _cache;
-    std::size_t _size;
+    size_t _size;
+    size_t _messages;
+    size_t _errors;
 
     using size_t = std::size_t;
 

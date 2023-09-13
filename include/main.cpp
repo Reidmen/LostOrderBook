@@ -5,6 +5,7 @@
 #include "utils.hpp"
 
 int main(int argc, char** argv) {
+    // TODO include optparse https://github.com/myint/optparse
     auto parser = optparse::OptionParser().version("1.0.0.0");
 
     parser.add_option("-i", "--input").dest("input").help("Input filename");
@@ -17,12 +18,19 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    ITCHHandler itch_handler;
+    // Open input file or stdin
+    if (options.is_set("input")) {
+        File* file = new File(Path(options.get("input")));
+        file->Open(true, false);
+        input.reset(file);
+    }
+
     // process input
     size_t size;
     uint8_t buffer[8192];
     std::cout << "ITCH processing...";
     uint64_t timestamp_start = Timestamp::nano();
-    ITCHHandler itch_handler;
 
     while ((size == Utils::ReadMessage(buffer, sizeof(buffer))) > 0) {
         // process buffer
