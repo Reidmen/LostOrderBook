@@ -5,8 +5,8 @@
 #include <iostream>
 
 #include "handler.hpp"
-#include "utils.hpp"
 #include "timestamp.hpp"
+#include "utils.hpp"
 
 int main(int argc, char** argv) {
     // TODO include optparse https://github.com/myint/optparse
@@ -41,16 +41,13 @@ int main(int argc, char** argv) {
         itch_handler.ProcessMessage(buffer, size);
     }
     uint64_t timestamp_stop = Timestamp::nano();
-    std::cout << "Done!" << std : endl;
-    std::cout << std::endl;
+    std::cout << "Done!" << std ::endl;
 
     std::cout << "Errors: " << itch_handler.errors() << std::endl;
-    std::cout << std::endl;
 
     size_t total_messages = itch_handler.messages();
 
     // TODO ReportConsole::GenerateTimePeriod
-    // TODO Timestamp.nano()
     // TODO OnMessage to handle messages override
     std::cout << "Processing Time: "
               << Utils::ReportConsole::GenerateTimePeriod(timestamp_stop -
@@ -66,7 +63,7 @@ int main(int argc, char** argv) {
     std::cout << "ITCH message throughput: "
               << total_messages * 1000000000 /
                      (timestamp_stop - timestamp_start)
-              << " msg/s" << std : endl;
+              << " msg/s" << std::endl;
 
     return 0;
 }

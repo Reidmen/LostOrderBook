@@ -45,6 +45,66 @@ class Timestamp {
     Timestamp(Timestamp&&) noexcept = default;
     ~Timestamp() noexcept = default;
 
+    // Timestamp offset operations
+    Timestamp& operator+=(int64_t offset) noexcept {
+        _timestamp += offset;
+        return *this;
+    }
+
+    Timestamp& operator-=(int64_t offset) noexcept {
+        _timestamp -= offset;
+        return *this;
+    }
+
+    friend Timestamp operator+(const Timestamp& timestamp,
+                               int64_t offset) noexcept {
+        return Timestamp(timestamp.total() + offset);
+    }
+    friend Timestamp operator+(int64_t offset,
+                               const Timestamp& timestamp) noexcept {
+        return Timestamp(offset + timestamp.total());
+    }
+
+    friend Timestamp operator-(const Timestamp& timestamp,
+                               int64_t offset) noexcept {
+        return Timestamp(timestamp.total() + offset);
+    }
+    friend Timestamp operator-(int64_t offset,
+                               const Timestamp& timestamp) noexcept {
+        return Timestamp(offset + timestamp.total());
+    }
+
+    // Convert timestmap to std::chrono time point
+    std::chrono::system_clock::time_point chrono() const noexcept {
+        return std::chrono::time_point_cast<
+            std::chrono::system_clock::duration>(
+            (std::chrono::time_point<std::chrono::system_clock>() +
+             std::chrono::nanoseconds(_timestamp)));
+    }
+
+    // Get total days
+    uint64_t days() const noexcept {
+        return _timestamp / (24 * 60 * 60 * 1000000000ull);
+    }
+    // Get total hours
+    uint64_t hours() const noexcept {
+        return _timestamp / (60 * 60 * 1000000000ull);
+    }
+    // Get total minutes
+    uint64_t minutes() const noexcept {
+        return _timestamp / (60 * 1000000000ull);
+    }
+    // Get total seconds
+    uint64_t seconds() const noexcept { return _timestamp / 1000000000; }
+    // Get milliseconds
+    uint64_t milliseconds() const noexcept { return _timestamp / 1000000; }
+    // Get microseconds
+    uint64_t microseconds() const noexcept { return _timestamp / 1000; }
+    // Get nanoseconds
+    uint64_t nanoseconds() const noexcept { return _timestamp; }
+
+    // Get total value of the current timestamp (total nanoseconds)
+    uint64_t total() const noexcept { return _timestamp; }
     // Get the epoch timestamp (thread-safe)
     static uint64_t epoch() noexcept { return 0; }
     // Get the UTC timetamp (thread-safe)
