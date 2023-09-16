@@ -1,8 +1,12 @@
+#include <optparse.h>
+
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
 
 #include "handler.hpp"
 #include "utils.hpp"
+#include "timestamp.hpp"
 
 int main(int argc, char** argv) {
     // TODO include optparse https://github.com/myint/optparse
