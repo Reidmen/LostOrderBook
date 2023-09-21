@@ -7,6 +7,7 @@
 #include "handler.hpp"
 #include "timestamp.hpp"
 #include "utils.hpp"
+#include "filesystem.hpp"
 
 int main(int argc, char** argv) {
     // TODO include optparse https://github.com/myint/optparse
@@ -25,15 +26,15 @@ int main(int argc, char** argv) {
     ITCHHandler itch_handler;
     // Open input file or stdin
     if (options.is_set("input")) {
-        File* file = new File(Path(options.get("input")));
-        file->Open(true, false);
+        FileSystem::File* file = new FileSystem::File(Path(options.get("input")));
+        file->FileSystem::Open(true, false);
         input.reset(file);
     }
 
     // process input
     size_t size;
     uint8_t buffer[8192];
-    std::cout << "ITCH processing...";
+    std::cout << "ITCH processing..." << std::endl;
     uint64_t timestamp_start = Timestamp::nano();
 
     while ((size == Utils::ReadMessage(buffer, sizeof(buffer))) > 0) {
