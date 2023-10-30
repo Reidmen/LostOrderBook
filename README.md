@@ -13,6 +13,7 @@ This library is for learning purposes. It's based on the [repository](https://gi
 * Logger timing and comparisons.
 * Using much it increases using [atomic_queue](https://github.com/max0x7ba/atomic_queue)?
 * Thread safety? Compare to [orderbook](https://github.com/bigfatwhale/orderbook)
+* [pybind11](https://github.com/pybind/pybind11) for Python API 
 * Concurrency? 
 
 
