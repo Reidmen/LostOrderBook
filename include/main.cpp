@@ -1,13 +1,14 @@
+#include <fmt/core.h>
 #include <optparse.h>
 
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
 
+#include "filesystem.hpp"
 #include "handler.hpp"
 #include "timestamp.hpp"
 #include "utils.hpp"
-#include "filesystem.hpp"
 
 int main(int argc, char** argv) {
     // TODO include optparse https://github.com/myint/optparse
@@ -26,7 +27,8 @@ int main(int argc, char** argv) {
     ITCHHandler itch_handler;
     // Open input file or stdin
     if (options.is_set("input")) {
-        FileSystem::File* file = new FileSystem::File(Path(options.get("input")));
+        FileSystem::File* file =
+            new FileSystem::File(Path(options.get("input")));
         file->FileSystem::Open(true, false);
         input.reset(file);
     }
@@ -34,7 +36,7 @@ int main(int argc, char** argv) {
     // process input
     size_t size;
     uint8_t buffer[8192];
-    std::cout << "ITCH processing..." << std::endl;
+    fmt::print("ITCH processing...");
     uint64_t timestamp_start = Timestamp::nano();
 
     while ((size == Utils::ReadMessage(buffer, sizeof(buffer))) > 0) {
@@ -42,29 +44,26 @@ int main(int argc, char** argv) {
         itch_handler.ProcessMessage(buffer, size);
     }
     uint64_t timestamp_stop = Timestamp::nano();
-    std::cout << "Done!" << std ::endl;
 
-    std::cout << "Errors: " << itch_handler.errors() << std::endl;
+    fmt::print("Done!");
+
+    fmt::print("Errors:");
 
     size_t total_messages = itch_handler.messages();
 
     // TODO ReportConsole::GenerateTimePeriod
     // TODO OnMessage to handle messages override
-    std::cout << "Processing Time: "
-              << Utils::ReportConsole::GenerateTimePeriod(timestamp_stop -
-                                                          timestamp_start)
-              << std::endl;
+    fmt::print("Processing Time: {}", Utils::ReportConsole::GenerateTimePeriod(
+                                          timestamp_stop - timestamp_start));
 
-    std::cout << "Total ITCH messages: " << total_messages << std::endl;
+    fmt::print("Total ITCH messages: {}", total_messages);
 
-    std::cout << "ITCH message latency: "
-              << Utils::ReportConsole::GenerateTimePeriod(
-                     (timestamp_stop - timestamp_start) / total_messages)
-              << std::endl;
-    std::cout << "ITCH message throughput: "
-              << total_messages * 1000000000 /
-                     (timestamp_stop - timestamp_start)
-              << " msg/s" << std::endl;
+    fmt::print("ITCH message latency: {}",
+               Utils::ReportConsole::GenerateTimePeriod(
+                   (timestamp_stop - timestamp_start) / total_messages));
+    fmt::print(
+        "ITCH message throughput: {} msg/s",
+        total_messages * 1000000000 / (timestamp_stop - timestamp_start));
 
     return 0;
 }

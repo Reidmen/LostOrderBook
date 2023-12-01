@@ -117,7 +117,6 @@ class OrderLimit {
     inline bool is_empty() const { return orders.empty(); }
     void erase(const std::list<SharedOrderPtr>::iterator &order_iter);
 
-
    public:
     /*
      * @brief get the non-all-or-none quantity at this price level.
