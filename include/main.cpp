@@ -1,10 +1,10 @@
 #include <fmt/core.h>
-#include <optparse.h>
 
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
 
+#include "../dep/cpp-optparse/OptionParser.h"
 #include "filesystem.hpp"
 #include "handler.hpp"
 #include "timestamp.hpp"
