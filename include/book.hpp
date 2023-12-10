@@ -58,6 +58,7 @@ class Book {
      * orders from the deferral queue are executed
      */
     inline void end_order_deferral();
+
     inline void insert_bid(ConstOrderPtr &order);
     inline void insert_ask(ConstOrderPtr &order);
 
@@ -118,13 +119,20 @@ class Book {
      */
     inline void check_asks_all_or_nothing(const double price);
 
-
    public:
     template <class T, class... Args>
     inline std::shared_ptr<T> insert(Args &&... args);
 
+    /*
+     * @brief Inserts an order/trigger into the book. Marketable orders
+     * will be executed. Partially filled orders will be queued
+     * (or cancelled if marked as immediate-or-cancel)
+     *
+     * @param order / trigger to be inserted
+     */
     inline void insert(std::shared_ptr<Order> order);
     inline void insert(std::shared_ptr<Trigger> trigger);
+
     inline void insert(const Insertable &insertable);
 
     /*
@@ -147,10 +155,10 @@ class Book {
     inline double get_market_price() const;
 
     /*
-     * @brief get an iterator to the end of bids 
+     * @brief get an iterator to the end of bids
      *
-     * @return std::map<double, OrderLimit>::iterator bid 
-     * price level end iterator 
+     * @return std::map<double, OrderLimit>::iterator bid
+     * price level end iterator
      */
     inline std::map<double, OrderLimit>::iterator bid_limits_begin();
     /*
@@ -169,12 +177,16 @@ class Book {
      */
     inline std::map<double, OrderLimit>::iterator bid_limits_end();
     /*
-     * @brief get an iterator to the end of the asks 
+     * @brief get an iterator to the end of the asks
      *
      * @return std::map<double, OrderLimit>::iterator ask price
      * level and iterator
      */
     inline std::map<double, OrderLimit>::iterator ask_limits_end();
+    inline std::map<double, OrderLimit>::iterator bid_limit_at_price(
+        const double price);
+    inline std::map<double, OrderLimit>::iterator ask_limit_at_price(
+        const double price);
 
     // destructor
     ~Book();

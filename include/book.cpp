@@ -352,6 +352,18 @@ std::map<double, OrderLimit>::iterator Book::ask_limits_end() {
     return asks.end();
 }
 
+std::map<double, OrderLimit>::iterator Book::bid_limit_at_price(
+    const double price) {
+    return bids.find(price);
+}
+
+std::map<double, OrderLimit>::iterator Book::ask_limit_at_price(
+    const double price) {
+    return asks.find(price);
+}
+
+// TODO ask / big orders begin / end to be implemented!
+
 Book::~Book() {
     bids.clear();
     asks.clear();
