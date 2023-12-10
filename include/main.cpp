@@ -11,7 +11,6 @@
 #include "utils.hpp"
 
 int main(int argc, char** argv) {
-    // TODO include optparse https://github.com/myint/optparse
     auto parser = optparse::OptionParser().version("1.0.0.0");
 
     parser.add_option("-i", "--input").dest("input").help("Input filename");
@@ -26,10 +25,11 @@ int main(int argc, char** argv) {
 
     ITCHHandler itch_handler;
     // Open input file or stdin
+    std::shared_ptr<Reader> input(new StdInput());
     if (options.is_set("input")) {
         FileSystem::File* file =
-            new FileSystem::File(Path(options.get("input")));
-        file->FileSystem::Open(true, false);
+            new FileSystem::File(FileSystem::Path(options.get("input")));
+        file->Open(true, false);
         input.reset(file);
     }
 
