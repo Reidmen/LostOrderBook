@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <iostream>
 
-#include "../dep/cpp-optparse/OptionParser.h"
+#include "../external/cpp-optparse/OptionParser.h"
 #include "filesystem.hpp"
 #include "handler.hpp"
 #include "timestamp.hpp"
